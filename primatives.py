@@ -42,12 +42,14 @@ class samplehalfedge(object):
             self.length += (a-b)*(a-b)
 
         self.length = math.sqrt(self.length)
+        return self.length
 
     def calculateMidpoint(self):
         self.midpoint = []
         for i in range(len(self.startpoint.position)):
             self.midpoint.append(self.startpoint.position[i] + self.endpoint.position[i])
             self.midpoint[i] = self.midpoint[i]/2
+        return self.midpoint
 
 class sampleedge(object):
     def __init__(self, startpoint,endpoint):
@@ -62,8 +64,8 @@ class sampleedge(object):
 
 
 class samplecell(object):
-    def __init__(self,shalfedges):
-        assert type(shalfedges[0]) is samplehalfedge
+    def __init__(self,bounds):
+        assert len(bounds) == 3 # bounds defines the boundaries of a triangle so it must be an iterable of length 3
         assert type(shalfedges[1]) is samplehalfedge
         assert type(shalfedges[2]) is samplehalfedge
         self.halfedges = shalfedges
