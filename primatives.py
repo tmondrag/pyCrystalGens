@@ -16,11 +16,15 @@ class samplehalfedge(object):
         if type(startpoint) is samplepoint:
             self.startpoint = startpoint
         else:
+            for coord in startpoint:
+                assert 0 == 0 * coord  # coordinates must be numeric
             self.startpoint = samplepoint(startpoint)
 
         if type(endpoint) is samplepoint:
             self.endpoint = endpoint
         else:
+            for coord in endpoint:
+                assert 0 == 0 * coord  # coordinates must be numeric
             self.endpoint = samplepoint(endpoint)
 
         assert len(self.startpoint.position) == len(self.endpoint.position) # the start and end points must have the same dimensionality
@@ -66,15 +70,51 @@ class sampleedge(object):
 class samplecell(object):
     def __init__(self,bounds):
         assert len(bounds) == 3 # bounds defines the boundaries of a triangle so it must be an iterable of length 3
-        assert type(shalfedges[1]) is samplehalfedge
-        assert type(shalfedges[2]) is samplehalfedge
-        self.halfedges = shalfedges
-        assert shalfedges[0].startpoint == shalfedges[2].endpoint
-        self.vertices = [shalfedges[0].startpoint]
-        assert shalfedges[1].startpoint == shalfedges[0].endpoint
-        self.vertices.append(shalfedges[1].startpoint)
-        assert shalfedges[2].startpoint == shalfedges[1].endpoint
-        self.vertices.append(shalfedges[2].startpoint)
+        if type(bounds[1]) is samplehalfedge:
+            self.createTriangleFromHalfedges(bounds)
+        else if type(bounds[2]) is samplepoint:
+            self.createTriangleFromVertices(bounds)
+        else:
+            self.createTriangleFromCoordinates(bounds)
+
+    def createTriangleFromHalfedges(self,hedges):
+        assert type(hedges[0]) is samplehalfedge
+        assert type(hedges[1]) is samplehalfedge
+        assert type(hedges[2]) is samplehalfedge
+        assert hedges[0].startpoint == hedges[2].endpoint
+        self.vertices = [hedges[0].startpoint]
+        assert hedges[1].startpoint == hedges[0].endpoint
+        self.vertices.append(hedges[1].startpoint)
+        assert hedges[2].startpoint == hedges[1].endpoint
+        self.vertices.append(hedges[2].startpoint)
+        self.halfedges = hedges
+        for halfedge in self.halfedges:
+            halfedge.cell = self
+
+    def createTriangleFromVertices(self,points):
+        assert type(points[0]) is samplepoint
+        assert type(points[1]) is samplepoint
+        assert type(points[2]) is samplepoint
+        self.vertices = points
+        self.halfedges = []
+        self.halfedges.append(samplehalfedge(points[0],points[1]))
+        self.halfedges.append(samplehalfedge(points[1],points[2]))
+        self.halfedges.append(samplehalfedge(points[2],points[0]))
+        for halfedge in self.halfedges:
+            halfedge.cell = self
+
+    def createTriangleFromCoordinates(self,coords):
+        assert len(coords[0]) == len(coords[1])
+        assert len(coords[2]) == len(coords[1])
+        self.vertices = []
+        self.vertices.append(coords[0])
+        self.vertices.append(coords[1])
+        self.vertices.append(coords[2])
+        points = self.vertices
+        self.halfedges = []
+        self.halfedges.append(samplehalfedge(points[0],points[1]))
+        self.halfedges.append(samplehalfedge(points[1],points[2]))
+        self.halfedges.append(samplehalfedge(points[2],points[0]))
         for halfedge in self.halfedges:
             halfedge.cell = self
 
